@@ -1,14 +1,56 @@
-# AI-Based Honeypot Detection System
+## AI-Based Honeypot Detection & Validation System
+# Overview
 
-Paste an IP or a URL into the dashboard → it's resolved via DNS → scanned →
-features are extracted → a trained Random Forest / XGBoost model decides
-**Real Server** or **Honeypot**, with a confidence score.
+Modern attackers and automated bots often identify honeypot systems by analyzing network fingerprints such as open ports, service banners, response behavior, and protocol characteristics. Once a honeypot is detected, attackers typically avoid interacting with it, reducing the effectiveness of cyber deception and limiting the threat intelligence that organizations can collect.
 
-This is your Phase 1 deliverable: a fully working end-to-end pipeline
-running on **synthetic dummy data**, so every part of the system (scanner
-code, ML training, API, React dashboard) is real and testable before your
-Docker lab exists. Swap in real lab data later with zero architecture
-changes.
+This project provides an AI-powered validation framework that evaluates whether a deployed host appears to be a real production server or a detectable honeypot based on its network fingerprint. By identifying detectable characteristics, security teams can refine honeypot configurations, improve realism, and strengthen deception-based defense strategies.
+
+Traditional honeypots are widely used by organizations to collect threat intelligence and analyze attacker behavior. However, modern attackers and automated bots often identify honeypots by analyzing network fingerprints such as:
+
+- Open ports
+- Service banners
+- TCP/IP behavior
+- Response timing
+- Service consistency
+- Protocol characteristics
+
+Once a honeypot is detected, attackers typically avoid interacting with it, significantly reducing the effectiveness of deception-based security.
+
+---
+
+##  Project Objective
+
+The objective of this project is to help **security teams evaluate the detectability of their own honeypot deployments** using Artificial Intelligence.
+
+Instead of relying only on rule-based fingerprint detection, this system uses Machine Learning to classify whether a target host appears to be:
+
+- 🟢 Real Production Server
+- 🔴 Detectable Honeypot
+
+By identifying detectable characteristics, organizations can improve honeypot realism and strengthen cyber deception strategies.
+
+> **Note:** This project is intended for defensive cybersecurity, security validation, and research purposes.
+
+---
+
+##  Features
+
+- IP / Domain Analysis
+- DNS Resolution
+- Nmap-Based Network Scanning
+- Socket-Based Feature Extraction
+- Random Forest Classifier
+- XGBoost Classifier
+- Prediction Confidence Score
+- FastAPI Backend
+- React Dashboard
+- Docker-Based Testing Environment
+- Modular ML Pipeline
+
+
+Key Objective
+
+The goal is not to attack or evade systems, but to help defenders assess the detectability of their own honeypot deployments. Organizations can use the predictions to identify network fingerprints that make a honeypot stand out and improve its realism, increasing the likelihood of collecting valuable threat intelligence.
 
 ```
 ai-honeypot-detection/
