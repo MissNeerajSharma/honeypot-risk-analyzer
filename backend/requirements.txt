@@ -1,0 +1,21 @@
+# Full project requirements. Install with:
+#   pip install -r requirements.txt --break-system-packages   (if on a system-managed Python)
+# or inside a virtualenv:
+#   python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
+
+numpy
+pandas
+scikit-learn
+xgboost
+joblib
+
+fastapi
+uvicorn[standard]
+pydantic
+
+python-nmap
+requests
+shap
+
+# Optional / Phase 2
+scapy

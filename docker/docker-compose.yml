@@ -1,0 +1,132 @@
+# Docker lab for AI Honeypot Detection — Phase 2 data collection.
+#
+# 4 honeypot types (Cowrie, Dionaea, Honeyd, Conpot) + 6 real services
+# (Nginx, Apache, OpenSSH, vsftpd, Postfix SMTP, BIND9 DNS) on an isolated
+# Docker network so you can scan BOTH classes safely and legally (you own
+# every container here).
+#
+# Glastopf was evaluated and dropped: its official image uses a Docker
+# manifest format modern Docker no longer supports, and building it from
+# source failed because Ubuntu 14.04 "trusty" (its only supported base)
+# has been fully removed from Canonical's archive mirrors, not just
+# deprecated. See docker/README.md "Known limitation" for details.
+#
+# Usage:
+#   cd docker
+#   docker compose up -d
+#   docker compose ps        # note the host ports mapped to each service
+#
+# Then point scanner/feature_extractor.py or the dashboard's "Real Scan"
+# mode at 127.0.0.1:<mapped-port> for each service, one at a time, and log
+# the resulting feature rows into dataset/dataset.csv with the correct
+# is_honeypot label (1 for the honeypot services, 0 for the real ones).
+#
+# IMPORTANT: keep this network isolated (no public port-forwarding on your
+# router) — Cowrie/Dionaea intentionally look attackable.
+
+services:
+  # ---------- Honeypots (label = 1) ----------
+  cowrie:
+    image: cowrie/cowrie:latest
+    container_name: honeypot_cowrie
+    ports:
+      - "2222:2222"   # fake SSH
+      - "2223:2223"   # fake Telnet
+    networks: [labnet]
+
+  dionaea:
+    image: dinotools/dionaea:latest
+    container_name: honeypot_dionaea
+    ports:
+      - "2121:21"     # fake FTP
+      - "4443:443"    # fake HTTPS
+      - "1445:445"    # fake SMB
+    networks: [labnet]
+
+  honeyd:
+    build: ./honeyd
+    container_name: honeypot_honeyd
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - "2021:21"
+      - "2032:22"
+      - "2023:23"
+      - "8090:80"
+    networks: [labnet]
+
+  conpot:
+    image: honeynet/conpot:latest
+    container_name: honeypot_conpot
+    ports:
+      - "8091:80"     # emulated ICS web UI
+      - "5020:502"    # Modbus
+      - "1610:161/udp" # SNMP
+    networks: [labnet]
+    # Same vintage as the old glastopf image. If this one also fails with
+    # "media type ... manifest.v1 ... no longer supported", swap it for a
+    # build using the Dockerfile in docker/README.md Step 4 the same way
+    # glastopf was switched to docker/glastopf/Dockerfile.
+
+  # Glastopf was evaluated and intentionally dropped — see docker/README.md
+  # "Known limitation" section for why.
+
+  # ---------- Real services (label = 0) ----------
+  real_nginx:
+    image: nginx:stable
+    container_name: real_nginx
+    ports:
+      - "8080:80"
+    networks: [labnet]
+
+  real_apache:
+    image: httpd:latest
+    container_name: real_apache
+    ports:
+      - "8081:80"
+    networks: [labnet]
+
+  real_openssh:
+    image: linuxserver/openssh-server:latest
+    container_name: real_openssh
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=labpassword
+      - USER_NAME=labuser
+    ports:
+      - "2022:2222"
+    networks: [labnet]
+
+  real_ftp:
+    image: fauria/vsftpd
+    container_name: real_ftp
+    environment:
+      - FTP_USER=labuser
+      - FTP_PASS=labpassword
+    ports:
+      - "2131:21"
+    networks: [labnet]
+
+  real_smtp:
+    image: boky/postfix
+    container_name: real_smtp
+    environment:
+      - ALLOWED_SENDER_DOMAINS=example.com
+    ports:
+      - "2025:25"
+    networks: [labnet]
+
+  real_dns:
+    image: internetsystemsconsortium/bind9:9.18
+    container_name: real_dns
+    ports:
+      - "2053:53"
+      - "2053:53/udp"
+    networks: [labnet]
+
+networks:
+  labnet:
+    driver: bridge
